@@ -331,7 +331,11 @@ void function RemoteFunctions_Init_Begin()
 	ScriptRemote_RegisterClientFunction( "DragonLMG_UpdateChargeEndTime", "float", 0.0, 4000.0, 16 ) //Dragon LMG update timer on shot
 	ScriptRemote_RegisterClientFunction( "DragonLMG_NoThermiteHint" ) //Dragon LMG no thermite hint
 	ScriptRemote_RegisterClientFunction( "ServerCallback_ShouldExitDrone" )
-	
+
+	// Bot spectator PIP
+	ScriptRemote_RegisterClientFunction( "ServerCallback_BotSpectate_Start", "int", 0, 2048 )
+	ScriptRemote_RegisterClientFunction( "ServerCallback_BotSpectate_Stop" )
+
 	RegisterNetworkedVariable( "coreAvailableFrac", SNDC_TITAN_SOUL, SNVT_FLOAT_RANGE, 0.0, 0.0, 1.0 )
 	RegisterNetworkedVariable( "coreExpireFrac", SNDC_TITAN_SOUL, SNVT_FLOAT_RANGE_OVER_TIME, 0.0, 0.0, 1.0 )
 	RegisterNetworkedVariable( "upgradeCount", SNDC_TITAN_SOUL, SNVT_INT, 0 )

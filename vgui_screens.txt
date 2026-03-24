@@ -202,6 +202,14 @@ VGUI_Screens
 		resfile			"scripts/screens/vgui_flowstate_inworld_test.res"
 	}
 
+	botai_spectate
+	{
+		type			vgui_screen_panel
+		pixelswide		1024
+		pixelshigh		1024
+		resfile			"scripts/screens/vgui_botai_spectate.res"
+	}
+
 	vgui_callsign_menu
 	{
 		type			vgui_screen_panel

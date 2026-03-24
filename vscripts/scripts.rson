@@ -833,6 +833,7 @@ Scripts:
 	client/cl_introscreen.gnut
 	//client/cl_loadout_crate.gnut
 	client/cl_main_hud.nut
+	client/cl_botai_spectate.nut
 	client/cl_rumble.gnut
 	client/cl_screenfade.gnut
 	client/cl_titan_cockpit.nut
