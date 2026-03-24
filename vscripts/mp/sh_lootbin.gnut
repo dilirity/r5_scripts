@@ -914,6 +914,8 @@ void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int loo
 		angles = AnglesCompose( p.angles, <0, 90, 0> )
 
 	entity loot = SpawnGenericLoot( ref, p.origin, angles, countPerDrop )
+	if ( loot == null )
+		return
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( lootbin )
 	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, lootbin )
