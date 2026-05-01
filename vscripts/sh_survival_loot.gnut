@@ -90,6 +90,7 @@ global function PropSurvivalFlagsSet
 global function SetPlayerInventory
 global function SURVIVAL_AddCallback_OnInventoryChanged
 global function SURVIVAL_AddCallback_OnHealingItemCountChanged
+global function Survival_AddCallback_OnEquipmentChanged
 global function Dev_SpawnAllLootTypes
 global function SURVIVAL_Loot_GetByType_InLevel
 global function SURVIVAL_Loot_GetByType_FixedTier
@@ -461,6 +462,7 @@ struct
 	table<entity, table<string,string> > playerInventoryData
 	array<void functionref( entity, array<ConsumableInventoryItem> )> inventoryChangeCallbacks
 	array<void functionref( entity, array<ConsumableInventoryItem> )> healingItemChangeCallbacks
+	array<void functionref( entity, string, string, string )>         equipmentChangedCallbacks
 	table<entity,int> lootNetworkDistanceCullingState //Counts the number times a given piece of loot has had its network distance culling toggled off. For a piece of loot to be network distance culled the count value index in this table must be 0.
 	int                                                               scriptManagedDeathboxArrayID
 #elseif CLIENT
@@ -2045,6 +2047,12 @@ void function SURVIVAL_AddCallback_OnHealingItemCountChanged( void functionref( 
 {
 	Assert( !file.healingItemChangeCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with SURVIVAL_AddCallback_OnHealingItemCountChanged" )
 	file.healingItemChangeCallbacks.append( callbackFunc )
+}
+
+void function Survival_AddCallback_OnEquipmentChanged( void functionref( entity, string, string, string ) callbackFunc )
+{
+	Assert( !file.equipmentChangedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Survival_AddCallback_OnEquipmentChanged" )
+	file.equipmentChangedCallbacks.append( callbackFunc )
 }
 #endif
 
@@ -3910,10 +3918,12 @@ void function ServerCallback_AttachedMod( int wIdx, int mIdx )
 #if SERVER
 void function Inventory_SetPlayerEquipment_Internal( entity player, string itemRef, string equipmentSlot, int propertyValue, entity deathBox, bool isForRefresh, int extraPropertyValue )
 {
+	string oldRef = ""
 	{
 		string currentEquip = Inventory_GetPlayerEquipment( player, equipmentSlot )
 		if ( SURVIVAL_Loot_IsRefValid( currentEquip ) )
 		{
+			oldRef = currentEquip
 			LootData data = SURVIVAL_Loot_GetLootDataByRef( currentEquip )
 			if ( data.passive != ePassives.INVALID )
 				TakePassive( player, data.passive )
@@ -3966,6 +3976,9 @@ void function Inventory_SetPlayerEquipment_Internal( entity player, string itemR
 
 	if ( (itemRef != "") && !isForRefresh )
 		StatsHook_PlayerEquip( player )
+
+	foreach ( func in file.equipmentChangedCallbacks )
+		func( player, equipmentSlot, oldRef, itemRef )
 }
 
 void function Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0, entity deathBox = null, int extraPropertyValue = -1 )
