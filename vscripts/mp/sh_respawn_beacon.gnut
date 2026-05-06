@@ -14,6 +14,7 @@ global function RespawnBeacon_GetSuccessFunc
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
+global function AddCallback_OnDNAPickedUp
 global function OnRespawnChamberSpawned
 global function OnMobileRespawnChamberSpawned
 
@@ -110,6 +111,7 @@ struct
 		array< void functionref(entity,entity) > Callbacks_OnRespawnBeaconStartUse
 		array< void functionref(entity,entity) > Callbacks_OnRespawnBeaconStopUse
 		array< void functionref(entity) >	callbacks_OnDNAPickupDestroyed
+		array< void functionref(entity,entity) >	callbacks_OnDNAPickedUp
 		table< entity, float > lastPingTimes
 	#endif
 }
@@ -519,6 +521,12 @@ void function AddCallback_OnDNAPickupDestroyed( void functionref(entity) callbac
 {
 	Assert( !file.callbacks_OnDNAPickupDestroyed.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnDNAPickupDestroyed" )
 	file.callbacks_OnDNAPickupDestroyed.append( callbackFunc )
+}
+
+void function AddCallback_OnDNAPickedUp( void functionref(entity,entity) callbackFunc )
+{
+	Assert( !file.callbacks_OnDNAPickedUp.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnDNAPickedUp" )
+	file.callbacks_OnDNAPickedUp.append( callbackFunc )
 }
 #endif
 
@@ -1125,6 +1133,9 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 			[ LiveAPI_GetPlayerIdentityTable( playerUser ), LiveAPI_GetPlayerIdentityTable( owner ) ],
 			[ 3/*player*/,                                  4/*collected*/ ]
 		)
+
+		foreach ( cb in file.callbacks_OnDNAPickedUp )
+			cb( owner, playerUser )
 
 		dna.Destroy()
 	}
