@@ -866,39 +866,39 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			}
 		}
 
-		#if DEVELOPER
-		// Bots fly random paths, turning, speeding up and slowing down
-		if ( player == leaderPlayer && player.IsBot() )
-		{
-			if ( Time() >= botNextForwardInputTime )
-			{
-				botLastForwardInputTime = Time()
-				botNextForwardInputTime = Time() + RandomFloatRange( 2.0, 4.0 )
-				botLastForwardInput = botNextForwardInput
-				botNextForwardInput = RandomFloatRange( -1.0, 1.0 )
-			}
+		// #if DEVELOPER
+		// // Bots fly random paths, turning, speeding up and slowing down
+		// if ( player == leaderPlayer && player.IsBot() )
+		// {
+		// 	if ( Time() >= botNextForwardInputTime )
+		// 	{
+		// 		botLastForwardInputTime = Time()
+		// 		botNextForwardInputTime = Time() + RandomFloatRange( 2.0, 4.0 )
+		// 		botLastForwardInput = botNextForwardInput
+		// 		botNextForwardInput = RandomFloatRange( -1.0, 1.0 )
+		// 	}
 
-			if ( Time() >= botNextRightInputTime )
-			{
-				botLastRightInputTime = Time()
-				botNextRightInputTime = Time() + RandomFloatRange( 3.0, 6.0 )
-				botLastRightInput = botNextRightInput
-				botNextRightInput = RandomFloatRange( -0.5, 0.5 )
-			}
+		// 	if ( Time() >= botNextRightInputTime )
+		// 	{
+		// 		botLastRightInputTime = Time()
+		// 		botNextRightInputTime = Time() + RandomFloatRange( 3.0, 6.0 )
+		// 		botLastRightInput = botNextRightInput
+		// 		botNextRightInput = RandomFloatRange( -0.5, 0.5 )
+		// 	}
 
-			if ( Time() >= botNextViewVecTime )
-			{
-				botLastViewVecTime = Time()
-				botNextViewVecTime = Time() + RandomFloatRange( 4.0, 7.0 )
-				botLastViewVec = botNextViewVec
-				botNextViewVec = AnglesToForward( < RandomFloatRange( -20.0, 90.0 ), RandomFloatRange( 0.0, 360.0 ), 0.0 > )
-			}
+		// 	if ( Time() >= botNextViewVecTime )
+		// 	{
+		// 		botLastViewVecTime = Time()
+		// 		botNextViewVecTime = Time() + RandomFloatRange( 4.0, 7.0 )
+		// 		botLastViewVec = botNextViewVec
+		// 		botNextViewVec = AnglesToForward( < RandomFloatRange( -20.0, 90.0 ), RandomFloatRange( 0.0, 360.0 ), 0.0 > )
+		// 	}
 
-			inputForward = GraphCapped( Time(), botLastForwardInputTime, botNextForwardInputTime, botLastForwardInput, botNextForwardInput )
-			inputRight = GraphCapped( Time(), botLastRightInputTime, botNextRightInputTime, botLastRightInput, botNextRightInput )
-			viewAng = VectorToAngles( LerpVector( botLastViewVec, botNextViewVec, GraphCapped( Time(), botLastViewVecTime, botNextViewVecTime, 0.0, 1.0 ) ) )
-		}
-		#endif
+		// 	inputForward = GraphCapped( Time(), botLastForwardInputTime, botNextForwardInputTime, botLastForwardInput, botNextForwardInput )
+		// 	inputRight = GraphCapped( Time(), botLastRightInputTime, botNextRightInputTime, botLastRightInput, botNextRightInput )
+		// 	viewAng = VectorToAngles( LerpVector( botLastViewVec, botNextViewVec, GraphCapped( Time(), botLastViewVecTime, botNextViewVecTime, 0.0, 1.0 ) ) )
+		// }
+		// #endif
 
 		skydiveData.inputForward = inputForward
 		skydiveData.inputRight = inputRight
