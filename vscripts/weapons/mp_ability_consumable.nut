@@ -41,6 +41,7 @@ global function ServerToClient_SetClientChargeTime
 #if SERVER
 global function Consumable_AddCallback_OnPlayerHealingStarted
 global function Consumable_AddCallback_OnPlayerHealingEnded
+global function Consumable_BotSetNextMod
 
 #endif // SERVER
 global function GetConsumableInfoFromRef
@@ -1934,6 +1935,15 @@ void function UltimatePackUse( entity player, ConsumableInfo info )
 	}
 }
 
+
+// Bots (fake clients) cannot send the SetNextHealModType client command, so
+// the offhand-switch gate would forever validate them against the
+// OnClientConnected seed ("phoenix_kit"). Server-side setter so bot scripts
+// can select the consumable before pressing IN_OFFHAND2.
+void function Consumable_BotSetNextMod( entity bot, string modName )
+{
+	file.playerToNextMod[ bot ] <- modName
+}
 
 void function ClientCommand_SetNextHealModType( entity player, array<string> args )
 {
