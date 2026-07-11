@@ -11,6 +11,7 @@ global function DEV_ResetSurveyZones
 #endif
 
 #if SERVER
+global function Bot_StageDeathField
 global function SURVIVAL_AddOverrideCircleLocation
 global function SURVIVAL_AddOverrideCircleLocation_Nitro
 global function SURVIVAL_GetNextCircleCenter
@@ -936,6 +937,19 @@ void function DeathFieldCreatePositions()
 	thread GenerateDeathFieldData( finalLocation )
 
 	HeatMapStat( null, "Sur_CircleEndPoint", < finalLocation.x, finalLocation.y, 0 > )
+}
+
+// Bot testing hook (botai headless pipeline). Headless servers never run the
+// real match flow, so Deathfield_OnPlayingGameStateEnter/DeathFieldCreatePositions
+// never execute and file.deathFieldStages stays empty — threading
+// SURVIVAL_RunArenaDeathField then script-errors on an empty array (and takes
+// the VM down). This does the same setup with a CALLER-CHOSEN final center so
+// scenarios are deterministic. Must run in a thread (waitthread inside).
+void function Bot_StageDeathField( vector finalPos )
+{
+	InitDeathFieldDataAndStageData()
+	CalculateMapCenter()
+	waitthread GenerateDeathFieldData( finalPos )
 }
 
 void function CalculateMapCenter()
