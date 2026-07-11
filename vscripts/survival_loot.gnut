@@ -1742,6 +1742,20 @@ void function EquipAttachments_Internal( entity player, entity weapon, string mo
 
 	if ( modToAdd != "" && !mods.contains( modToAdd ) )
 	{
+		// GUARD: weapon.SetMods() below hard-crashes the server ("Error
+		// calculating bitfield for mods") when a mod is not in the weapon's
+		// own mod list. The attach-point check upstream also matches
+		// DISABLED attach points (GetAttachPointForAttachmentOnWeapon
+		// returns those too), so bot auto-equip can reach here with an
+		// attachment the weapon cannot take (seen: mp_weapon_g2, br soak
+		// 2026-07-11). Refuse loudly instead of dying; the item stays in
+		// inventory when takeFromInventory (removal happens after this).
+		if ( !GetWeaponMods_Global( weapon.GetWeaponClassName() ).contains( modToAdd ) )
+		{
+			printt( "[EquipAttachments] REFUSED unsupported mod", modToAdd, "on", weapon.GetWeaponClassName() )
+			return
+		}
+
 		// if ( player in file.Callbacks_OnEquipAttachments )
 		// {
 			// foreach ( callbackFunc in file.Callbacks_OnEquipAttachments[player] )
