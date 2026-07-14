@@ -1756,6 +1756,28 @@ void function EquipAttachments_Internal( entity player, entity weapon, string mo
 			return
 		}
 
+		// GUARD 2: a legal-list mod can still lack an ATTACH POINT on this
+		// weapon (doubletake + energy_mag_l2, crash 2026-07-14: CanAttach
+		// says yes, point lookup says "") — then no modToRemove resolves,
+		// the old mag stays, and SetMods dies on two mags in the set.
+		// Refuse both inconsistent shapes loudly.
+		string addPoint = GetAttachPointForAttachmentOnWeapon( weaponRef, modToAdd )
+		if ( addPoint == "" )
+		{
+			printt( "[EquipAttachments] REFUSED mod with no attach point", modToAdd, "on", weaponRef )
+			return
+		}
+		if ( modToRemove == "" )
+		{
+			string installed = GetInstalledWeaponAttachmentForPoint( weapon, addPoint )
+			if ( installed != "" && installed != modToAdd )
+			{
+				printt( "[EquipAttachments] REFUSED", modToAdd, "on", weaponRef,
+					"- point", addPoint, "occupied by", installed, "with nothing marked for removal" )
+				return
+			}
+		}
+
 		// if ( player in file.Callbacks_OnEquipAttachments )
 		// {
 			// foreach ( callbackFunc in file.Callbacks_OnEquipAttachments[player] )
