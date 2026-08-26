@@ -5492,12 +5492,16 @@ entity function GetJumpmasterForTeam( int team )
 	entity jumpMaster
 
 	array<entity> teammates = GetPlayerArrayOfTeam_Alive( team )
+	// A team of one never sets isJumpingWithSquad (survival_ship sets it from
+	// alive-teammate count), so requiring it here makes every solo jumpmaster
+	// assignment unreadable — the game's own fallback assigns them anyway.
+	bool soloTeam = teammates.len() == 1
 	foreach( entity player in teammates )
 	{
 		if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 			continue
 
-		if ( !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+		if ( !soloTeam && !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
 			continue
 
 		if ( player.GetPlayerNetBool( "isJumpmaster" ) )
