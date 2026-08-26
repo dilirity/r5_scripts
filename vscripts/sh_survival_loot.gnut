@@ -4628,6 +4628,7 @@ void function DeathBoxThink( entity ent, entity playerUser )
 {
 #if SERVER
 	ExtendedUseSettings settings
+	settings.successFunc = DeathBoxFakeClientTakeContents
 #else
 	ExtendedUseSettings settings = DeathBoxGetExtendedUseSettings( ent, playerUser )
 #endif
@@ -4638,6 +4639,34 @@ void function DeathBoxThink( entity ent, entity playerUser )
 	ent.EndSignal( "OnDestroy" )
 
 	waitthread ExtendedUse( ent, playerUser, settings )
+}
+
+// Bot-AI players (fake clients, "TestBot*" prefix — the marker BotAI itself
+// uses, sv_botai.nut) have no UI: the retail take flow ends in UI clicks they
+// cannot perform. For them ONLY, a completed open-hold takes the box contents
+// server-side through the normal ground-item pickup rules; items that do not
+// fit (or trigger swaps) behave exactly like ground pickup, with swapped-out
+// gear going back into this box. Human players are untouched.
+void function DeathBoxFakeClientTakeContents( entity ent, entity player, ExtendedUseSettings settings )
+{
+	if ( !IsValid( ent ) || !IsValid( player ) )
+		return
+
+	if ( player.GetPlayerName().find( "TestBot" ) != 0 )
+		return
+
+	array<entity> links = ent.GetLinkEntArray()
+	foreach ( entity item in links )
+	{
+		// Link membership is the authoritative contents list (the retail UI
+		// reads the same array) — NOT GetParent(): boxed items can end up
+		// with an invalid parent while still linked (observed live with
+		// armor_pickup_lv1, 2026-08-22), so a parent check skips real loot.
+		if ( !IsValid( item ) )
+			continue
+
+		Survival_PickupItem( item, player, 0, ent )
+	}
 }
 
 
