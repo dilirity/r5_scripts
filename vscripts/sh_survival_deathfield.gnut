@@ -125,6 +125,7 @@ struct
 		int                                          circlesCompleted = -1
         int                                          currentCircle = -1
         bool                                         isDeathFieldShrinking = false
+		bool                                         deathFieldControllerStarted = false
 		table<vector, float>                         overrideCircleEndPos
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStartShrink
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStopShrink
@@ -469,6 +470,12 @@ void function DeathFieldShrinkThink( DeathFieldData data, entity deathField )
 
 void function SURVIVAL_RunArenaDeathField()
 {
+	// Scenario staging and the match flow can both release this controller.
+	// Two copies corrupt the shared stage radii before the next shrink.
+	if ( file.deathFieldControllerStarted )
+		return
+	file.deathFieldControllerStarted = true
+
 	FlagWait( "DeathCircleActive" )
 
 	if ( file.deathFieldStartStage == 0 )
