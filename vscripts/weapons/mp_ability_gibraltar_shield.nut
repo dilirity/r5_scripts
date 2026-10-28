@@ -326,7 +326,7 @@ void function GibraltarShield_OnDamaged( entity ent, var damageInfo )
 			{
 				LiveAPI_WriteLogUsingDefinedFields( eLiveAPI_EventTypes.gibraltarShieldAbsorbed,
 					[ LiveAPI_GetPlayerIdentityTable( attacker ), LiveAPI_GetPlayerIdentityTable( owner ), int( damage ) ],
-					[ 3/*attacker*/,                              4/*victim*/,                             5/*damageInflicted*/ ]
+					[ 3/*attacker*/,                              4/*victim*/,                             6/*damageInflicted*/ ]
 				)
 			}
 		}
