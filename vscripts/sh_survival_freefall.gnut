@@ -72,6 +72,7 @@ global function GetSkydiveSmokeColorForTeam
     global function ForcedSkydiveTriggerThink_EnterCallback
 	global function ClientCommand_StopFreefallFollowMode
 	global function AddCallback_OnPlayerFreefallMove
+	global function AddCallback_OnPlayerSkydiveFrame
 
 	const bool SKYDIVE_DEBUG = false
 
@@ -180,6 +181,7 @@ global function GetSkydiveSmokeColorForTeam
 		array<string> jumpJetAttachments = [ "vent_left", "vent_right" ]
 		bool freefall_enabled = false
 		array< void functionref( entity ) > freefallMoveCallbacks
+		array< void functionref( entity, table ) > skydiveFrameCallbacks
 	} file
 #endif //SERVER
 
@@ -820,6 +822,10 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 	float currentYaw = player.GetAngles().y
 
+	SkyDiveMovement_RunFrameCallbacks( player, "start", startTime, prevTime, movementSpeed, actualDiveAngle, currentYaw, slowZone,
+		_lastFrameSlowZone, lastSlowZoneChangeTime, unfollowTime, isFollowing, freefallEnabled, skydiveData, followPlayerData,
+		0.0, 0.0, <0, 0, 0>, <0, 0, 0>, <0, 0, 0>, <0, 0, 0>, 0.0, false, false, false )
+
 	#if DEVELOPER
 		float botLastForwardInputTime = 0.0
 		float botNextForwardInputTime = 0.0
@@ -847,6 +853,8 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		vector horizonVec = AnglesToForward( FlattenAngles( player.GetAngles() ) )
 		vector rightVec = AnglesToRight( FlattenAngles( player.GetAngles() ) )
 		vector viewAng = player.p.skydiveFreelookEnabled > 0 ? player.p.skydiveFreelookLockedCameraAngles : player.CameraAngles()
+		vector frameAngles = player.GetAngles()
+		vector frameOrigin = player.GetOrigin()
 
 		if ( slowZone && ( inputForward > 0.5 || inputForward < -0.5 || inputRight > 0.5 || inputRight < -0.5 ) )
 			player.p.skydiveIsFollowing = false
@@ -862,6 +870,10 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 				player.ClearParent()
 				player.SetPlayerNetEnt( "skydiveFollowPlayer", null )
 				player.SetVelocity( followPlayerData.velocity )
+
+				SkyDiveMovement_RunFrameCallbacks( player, "unfollow", startTime, prevTime, movementSpeed, actualDiveAngle, currentYaw,
+					slowZone, _lastFrameSlowZone, lastSlowZoneChangeTime, unfollowTime, isFollowing, freefallEnabled, skydiveData,
+					followPlayerData, inputForward, inputRight, viewAng, frameAngles, <0, 0, 0>, frameOrigin, 0.0, false, false, false )
 
 				WaitFrame()
 				continue
@@ -956,6 +968,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		//#####################################
 
 		//actualDiveAngle = player.Skydive_GetDiveAngle()
+		vector frameVelocity = player.GetVelocity()
 		actualDiveAngle = -asin( Normalize( player.GetVelocity() ).z ) * RAD_TO_DEG
 		actualDiveAngle = Clamp( actualDiveAngle, MIN_GLIDE_ANGLE_SPEED, MAX_GLIDE_ANGLE )
 
@@ -1188,6 +1201,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			}
 		}
 
+		bool frameOnGround = player.IsOnGround()
 		if ( player.IsOnGround() || ( elapsedTime >= 2.0 && skydiveData.distanceFromLanding <= SKYDIVE_FINISHED_DIST_FROM_GROUND ) )
 		{
 			skydiveData.skyDiveEnded = true
@@ -1204,6 +1218,10 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			//}
 
 			player.RumbleEffect( 0, 0, 0.0 )
+			SkyDiveMovement_RunFrameCallbacks( player, "end", startTime, prevTime, movementSpeed, actualDiveAngle, currentYaw, slowZone,
+				_lastFrameSlowZone, lastSlowZoneChangeTime, unfollowTime, isFollowing, freefallEnabled, skydiveData, followPlayerData,
+				inputForward, inputRight, viewAng, frameAngles, frameVelocity, frameOrigin, strafeAmount, shouldBeInLandingMode,
+				frameOnGround, inBoundaryVolume )
 			return
 		}
 
@@ -1258,6 +1276,11 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		#endif
 
 		_lastFrameSlowZone = slowZone
+
+		SkyDiveMovement_RunFrameCallbacks( player, "frame", startTime, prevTime, movementSpeed, actualDiveAngle, currentYaw, slowZone,
+			_lastFrameSlowZone, lastSlowZoneChangeTime, unfollowTime, isFollowing, freefallEnabled, skydiveData, followPlayerData,
+			inputForward, inputRight, viewAng, frameAngles, frameVelocity, frameOrigin, strafeAmount, shouldBeInLandingMode,
+			frameOnGround, inBoundaryVolume )
 
 		WaitFrame()
 	}
@@ -1416,6 +1439,61 @@ void function AddCallback_OnPlayerFreefallMove( void functionref( entity ) callb
 {
 	Assert( !file.freefallMoveCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerFreefallMove" )
 	file.freefallMoveCallbacks.append( callbackFunc )
+}
+
+// Runs at the end of every SkyDiveMovement iteration, and once before the first: the loop's own state and what the
+// iteration read, so a flight can be predicted from it (botai docs/skydive.md, stage 1c).
+void function AddCallback_OnPlayerSkydiveFrame( void functionref( entity, table ) callbackFunc )
+{
+	Assert( !file.skydiveFrameCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerSkydiveFrame" )
+	file.skydiveFrameCallbacks.append( callbackFunc )
+}
+
+void function SkyDiveMovement_RunFrameCallbacks( entity player, string kind, float startTime, float prevTime, float movementSpeed,
+	float actualDiveAngle, float currentYaw, bool slowZone, bool lastFrameSlowZone, float lastSlowZoneChangeTime, float unfollowTime,
+	bool isFollowing, bool freefallEnabled, SkydivePlayerData skydiveData, SkydivePlayerData followPlayerData, float inputForward,
+	float inputRight, vector viewAng, vector frameAngles, vector frameVelocity, vector frameOrigin, float strafeAmount,
+	bool shouldBeInLandingMode, bool frameOnGround, bool inBoundaryVolume )
+{
+	if ( file.skydiveFrameCallbacks.len() == 0 )
+		return
+
+	table state = {
+		kind = kind,
+		time = Time(),
+		startTime = startTime,
+		prevTime = prevTime,
+		movementSpeed = movementSpeed,
+		diveAngle = actualDiveAngle,
+		currentYaw = currentYaw,
+		slowZone = slowZone,
+		lastFrameSlowZone = lastFrameSlowZone,
+		lastSlowZoneChangeTime = lastSlowZoneChangeTime,
+		unfollowTime = unfollowTime,
+		isFollowing = isFollowing,
+		freefallEnabled = freefallEnabled,
+		ended = skydiveData.skyDiveEnded,
+		velocity = skydiveData.velocity,
+		followValid = IsValid( followPlayerData.player ),
+		followEnded = followPlayerData.skyDiveEnded,
+		followVelocity = followPlayerData.velocity,
+		freelook = player.p.skydiveFreelookEnabled > 0,
+		freelookAngles = player.p.skydiveFreelookLockedCameraAngles,
+		boundaryVolumes = file.skydiveBoundaryVolumes.len(),
+		readInputForward = inputForward,
+		readInputRight = inputRight,
+		readViewAngles = viewAng,
+		readAngles = frameAngles,
+		readVelocity = frameVelocity,
+		readOrigin = frameOrigin,
+		readStrafeAngle = strafeAmount,
+		readDistanceToLand = skydiveData.distanceFromLanding,
+		readLandingMode = shouldBeInLandingMode,
+		readOnGround = frameOnGround,
+		readInBoundaryVolume = inBoundaryVolume
+	}
+	foreach ( callbackFunc in file.skydiveFrameCallbacks )
+		callbackFunc( player, state )
 }
 
 bool function ClientCommand_StopFreefallFollowMode( entity player, array<string> args )
