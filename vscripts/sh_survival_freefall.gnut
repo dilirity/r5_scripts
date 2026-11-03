@@ -71,6 +71,7 @@ global function GetSkydiveSmokeColorForTeam
 	global function PlayerFallAssistanceDetection
     global function ForcedSkydiveTriggerThink_EnterCallback
 	global function ClientCommand_StopFreefallFollowMode
+	global function AddCallback_OnPlayerFreefallMove
 
 	const bool SKYDIVE_DEBUG = false
 
@@ -178,6 +179,7 @@ global function GetSkydiveSmokeColorForTeam
 		array<entity> skydiveBoundaryVolumes
 		array<string> jumpJetAttachments = [ "vent_left", "vent_right" ]
 		bool freefall_enabled = false
+		array< void functionref( entity ) > freefallMoveCallbacks
 	} file
 #endif //SERVER
 
@@ -1409,6 +1411,13 @@ void function DisableSkydiveThirdPerson( entity player )
 	DeployAndEnableWeaponsWithSlowDeploy( player, 0.0 )
 }
 
+// Runs on every command of a freefall, from the engine's dive move (r5apex sub_140BAA9E0), before the command moves the player.
+void function AddCallback_OnPlayerFreefallMove( void functionref( entity ) callbackFunc )
+{
+	Assert( !file.freefallMoveCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPlayerFreefallMove" )
+	file.freefallMoveCallbacks.append( callbackFunc )
+}
+
 bool function ClientCommand_StopFreefallFollowMode( entity player, array<string> args )
 {
 	if ( IsValid( player ) )
@@ -2127,7 +2136,8 @@ void function CodeCallback_PlayerFreefallMove( entity player )
 	// #endif
 	
 	#if SERVER
-
+	foreach ( callbackFunc in file.freefallMoveCallbacks )
+		callbackFunc( player )
 	#else
 	float elapsedTime = Time() - player.Player_GetFreefallStartTime()
 	if ( elapsedTime >= 2.0 )
