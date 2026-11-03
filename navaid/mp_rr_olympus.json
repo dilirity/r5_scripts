@@ -1,0 +1,17 @@
+{
+	"version": 1,
+	"mapVersion": 30,
+	"navCRC": 2494138713,
+	"links": [
+		{
+			"id": "defense-perimeter-roof-drop",
+			"status": "accepted",
+			"group": 1173,
+			"start": [ 13100, -11815, -5140 ],
+			"end": [ 13223, -11714, -5595 ],
+			"source": "hand: walk off the low edge of the roof bot 2 stood on (bots_only_trios/20261102-182304-1924)",
+			"wins": 0,
+			"fails": 0
+		}
+	]
+}
