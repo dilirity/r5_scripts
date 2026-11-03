@@ -9,7 +9,76 @@
 			"group": 1173,
 			"start": [ 13100, -11815, -5140 ],
 			"end": [ 13223, -11714, -5595 ],
+			"steps": [
+				{ "move": "walk_off", "at": [ 13100, -11815, -5140 ], "yaw": 38.8 }
+			],
 			"source": "hand: walk off the low edge of the roof bot 2 stood on (bots_only_trios/20261102-182304-1924)",
+			"wins": 0,
+			"fails": 0
+		},
+		{
+			"id": "velvet-oasis-lamp-drop",
+			"status": "accepted",
+			"group": 2815,
+			"start": [ -33490, 9584, -5309 ],
+			"end": [ -33490, 9720, -5549 ],
+			"steps": [
+				{ "move": "walk_off", "at": [ -33490, 9584, -5309 ], "yaw": 90 }
+			],
+			"source": "hand: walk off the lamp top bot 9 stood on (bots_only_trios/20261102-190341-0525)",
+			"wins": 0,
+			"fails": 0
+		},
+		{
+			"id": "power-grid-cable-drop",
+			"status": "accepted",
+			"group": 3563,
+			"start": [ -6292, 18966, -5245 ],
+			"end": [ -6324, 18836, -5889 ],
+			"steps": [
+				{ "move": "walk_off", "at": [ -6292, 18966, -5245 ], "yaw": -95 }
+			],
+			"source": "hand: walk off the tower cable bot 20 stood on (bots_only_trios/20261102-174354-5966)",
+			"wins": 0,
+			"fails": 0
+		},
+		{
+			"id": "crossroads-walkway-drop",
+			"status": "accepted",
+			"group": 429,
+			"start": [ 5634, -21532, -5020 ],
+			"end": [ 5766, -21499, -5325 ],
+			"steps": [
+				{ "move": "walk_off", "at": [ 5634, -21532, -5020 ], "yaw": 14 }
+			],
+			"source": "hand: walk off the east end of the raised walkway bot 10 stood on (bots_only_trios/20261102-174354-5966)",
+			"wins": 0,
+			"fails": 0
+		},
+		{
+			"id": "bonsai-roof-drop",
+			"status": "accepted",
+			"group": 189,
+			"start": [ -3242, -27430, -3953 ],
+			"end": [ -3242, -27568, -4457 ],
+			"steps": [
+				{ "move": "walk_off", "at": [ -3242, -27430, -3953 ], "yaw": -90 }
+			],
+			"source": "hand: walk off the south edge of the curved roof bot 33 stood on (bots_only_trios/20261102-222745-44cf)",
+			"wins": 0,
+			"fails": 0
+		},
+		{
+			"id": "arcadia-pit-climb",
+			"status": "accepted",
+			"group": 3626,
+			"start": [ -24974, 19220, -6806 ],
+			"end": [ -24862, 19304, -6689 ],
+			"steps": [
+				{ "move": "climb", "at": [ -24974, 19220, -6806 ], "yaw": 37, "run": 30 },
+				{ "move": "walk_off", "at": [ -24904, 19263, -6652 ], "yaw": 37 }
+			],
+			"source": "hand: climb the low north-east wall of the pit bot 51 stood in, then walk off its unmeshed top (bots_only_trios/20261102-222745-44cf)",
 			"wins": 0,
 			"fails": 0
 		}
