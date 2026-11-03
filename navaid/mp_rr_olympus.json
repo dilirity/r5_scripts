@@ -3212,27 +3212,6 @@
 			"wins": 3,
 			"fails": 0
 		}, {
-			"id": "probe-g1512",
-			"status": "proposed",
-			"group": 1512,
-			"start": [-43539, -7332, -2554],
-			"end": [-43322, -6731, -3254],
-			"steps": [{
-					"move": "jump",
-					"at": [-43539, -7332, -2554],
-					"yaw": 113.0,
-					"run": 72
-				}, {
-					"move": "jump",
-					"at": [-43683, -6994, -2989],
-					"yaw": 23.0,
-					"run": 136
-				}],
-			"source": "probe pass mp_rr_olympus, bot test 0/3",
-			"wins": 0,
-			"fails": 1,
-			"reason": "the bot died at (-43815 -6047 -7895)"
-		}, {
 			"id": "probe-g1526",
 			"status": "accepted",
 			"group": 1526,
