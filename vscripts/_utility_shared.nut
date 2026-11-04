@@ -5174,7 +5174,8 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 
 	AttachmentData aData = GetAttachmentData( attachment )
 
-	return (aData.compatibleWeapons.contains( weaponName ))
+	// The engine loads only a gun's first 31 mods; SetMods is fatal on any name past that.
+	return aData.compatibleWeapons.contains( weaponName ) && GetWeaponMods_Global( weaponName ).contains( attachment )
 }
 
 string function GetBaseWeaponRef( string weaponRef )

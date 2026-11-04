@@ -416,6 +416,12 @@
             "viewmodel_jolt_scale"  "0.35"
         }
 
+		// Own entries: inherited mods load last and these fell past the engine's 31.
+		barrel_stabilizer_l1             {}
+		barrel_stabilizer_l2             {}
+		barrel_stabilizer_l3             {}
+		barrel_stabilizer_l4_flash_hider {}
+
 		"bullets_mag_l1"
 		{
 			"ammo_clip_size"  "15"
